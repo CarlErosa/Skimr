@@ -59,7 +59,13 @@ export async function triage(title: string, text: string): Promise<Triage> {
     }).models.generateContent({
       model,
       contents: prompt(title, text.slice(0, 15_000)),
-      config: { temperature: 0.2, responseMimeType: "application/json" },
+      config: {
+        temperature: 0.2,
+        responseMimeType: "application/json",
+        // Triage is extraction, not reasoning; thinking only adds latency and
+        // pushes the free tier into its deadline.
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     });
     raw = (res.text ?? "").trim();
   } catch (e) {
@@ -70,7 +76,7 @@ export async function triage(title: string, text: string): Promise<Triage> {
     if (status === 404 || status === 400) {
       throw new Error("The model name or API version is wrong. Check MODEL in .env.local.");
     }
-    if (status === 503) {
+    if (status === 503 || status === 504) {
       throw new Error("The model is busy right now. Try again in a minute.");
     }
     if (e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError")) {

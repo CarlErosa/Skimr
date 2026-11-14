@@ -19,7 +19,7 @@ Deploy on Vercel: push the repo, set `GEMINI_API_KEY` and `MODEL` as environment
 
 ## How it works
 
-1. Fetch (10s timeout, max five redirect hops) and extract the article with Readability + jsdom. Under 300 characters counts as a failed extraction.
+1. Fetch (10s timeout, max five redirect hops) and extract the article with Readability + linkedom. Under 300 characters counts as a failed extraction.
 2. Truncate to 15,000 characters and send one Gemini call (`temperature 0.2`, JSON response mode) that must return a verdict, a one-sentence reason, and 2 to 4 claim/quote pairs.
 3. **Verify in code.** Both the quote and the article are normalized (lowercase, whitespace collapsed, curly quotes and dashes made plain) and the quote must be a substring of the article. A quote the model invented stays in the response but is flagged, struck through, and its text is never shown as if it were real.
 4. Results are sorted read, skim, skip, and one failed article never takes down the others.
