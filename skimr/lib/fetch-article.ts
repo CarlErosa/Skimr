@@ -1,6 +1,6 @@
 import { isIP } from "node:net";
 import { lookup } from "node:dns/promises";
-import { JSDOM } from "jsdom";
+import { parseHTML } from "linkedom";
 import { Readability } from "@mozilla/readability";
 
 const PRIVATE = [
@@ -49,8 +49,8 @@ export async function fetchArticle(rawUrl: string): Promise<Article> {
       throw new Error(`The site answered ${res.status}. Paste the article text instead.`);
     }
 
-    const dom = new JSDOM(await res.text(), { url: url.href });
-    const parsed = new Readability(dom.window.document).parse();
+    const { document } = parseHTML(await res.text());
+    const parsed = new Readability(document as unknown as Document).parse();
     const text = (parsed?.textContent ?? "").replace(/\s+/g, " ").trim();
     if (text.length < 300) {
       throw new Error("Could not extract enough article text. Paste the text instead.");
